@@ -24,7 +24,7 @@ const createUser = async (req, res) => {
 
   try {
     const { rowCount } = await pool.query(
-      "select * from usuarios where email = $1",
+      "SELECT * FROM usuarios WHERE email = $1",
       [email]
     );
 
@@ -36,13 +36,16 @@ const createUser = async (req, res) => {
 
     const passwordEncrypt = await bcrypt.hash(senha, 10);
 
-    const newUser = await pool.query(
+    const { rows } = await pool.query(
       "INSERT INTO usuarios (nome, email, senha) VALUES ($1, $2, $3) returning *",
       [nome, email, passwordEncrypt]
     );
 
-    return res.status(201).json(newUser.rows);
+   const { senha: _, ...user} = rows[0];
+
+    return res.status(201).json(user);
   } catch (error) {
+    console.log(error.message)
     res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
