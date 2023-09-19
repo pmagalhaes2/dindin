@@ -6,24 +6,6 @@ const jwtPassword = require("../passwordJwt");
 const createUser = async (req, res) => {
   const { nome, email, senha } = req.body;
 
-  if (!nome) {
-    return res.status(400).json({
-      message: "O campo nome é obrigatório!",
-    });
-  }
-
-  if (!email) {
-    return res.status(400).json({
-      message: "O campo e-mail é obrigatório!",
-    });
-  }
-
-  if (!senha) {
-    return res.status(400).json({
-      message: "O campo senha é obrigatório!",
-    });
-  }
-
   try {
     const { rowCount } = await pool.query(
       "SELECT * FROM usuarios WHERE email = $1",
@@ -53,18 +35,6 @@ const createUser = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, senha } = req.body;
-
-  if (!email) {
-    return res.status(400).json({
-      message: "O campo e-mail é obrigatório!",
-    });
-  }
-
-  if (!senha) {
-    return res.status(400).json({
-      message: "O campo senha é obrigatório!",
-    });
-  }
 
   try {
     const { rows, rowCount } = await pool.query(
@@ -116,24 +86,6 @@ const detailUser = async (req, res) => {
 const updateUser = async (req, res) => {
   const { id } = req.usuario;
   const { nome, email, senha } = req.body;
-
-  if (!nome) {
-    return res.status(400).json({
-      message: "O campo nome é obrigatório!",
-    });
-  }
-
-  if (!email) {
-    return res.status(400).json({
-      message: "O campo e-mail é obrigatório!",
-    });
-  }
-
-  if (!senha) {
-    return res.status(400).json({
-      message: "O campo senha é obrigatório!",
-    });
-  }
 
   try {
     const { rowCount } = await pool.query(
