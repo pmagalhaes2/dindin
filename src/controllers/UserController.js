@@ -1,8 +1,7 @@
 const pool = require("../connection");
 const bcrypt = require("bcrypt");
-const jwt = require('jsonwebtoken')
-const jwtPassword = require('../passwordJwt');
-const { json } = require("express");
+const jwt = require("jsonwebtoken");
+const jwtPassword = require("../passwordJwt");
 
 const createUser = async (req, res) => {
   const { nome, email, senha } = req.body;
@@ -53,7 +52,7 @@ const createUser = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { email, senha } = req.body
+  const { email, senha } = req.body;
 
   if (!email) {
     return res.status(400).json({
@@ -68,30 +67,54 @@ const login = async (req, res) => {
   }
 
   try {
-    const { rows, rowCount } = await pool.query("SELECT * FROM usuarios WHERE email = $1", [email])
+    const { rows, rowCount } = await pool.query(
+      "SELECT * FROM usuarios WHERE email = $1",
+      [email]
+    );
 
     if (rowCount === 0) {
-      return res.status(404).json({ message: "Usuário e/ou senha inválido(s)." })
+      return res
+        .status(404)
+        .json({ message: "Usuário e/ou senha inválido(s)." });
     }
 
-    const { senha: passwordHash, ...user } = rows[0]
+    const { senha: passwordHash, ...user } = rows[0];
 
-    const correctPassword = await bcrypt.compare(senha, passwordHash)
+    const correctPassword = await bcrypt.compare(senha, passwordHash);
 
-    const token = jwt.sign({ id: user.id }, jwtPassword, { expiresIn: '8h' })
+    const token = jwt.sign({ id: user.id }, jwtPassword, { expiresIn: "8h" });
 
     return correctPassword
       ? res.json({ usuario: user, token })
       : res.status(404).json({ message: "E-mail e/ou senha inválidos!" });
-
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ message: "Erro interno do servidor" })
+    res.status(500).json({ message: "Erro interno do servidor" });
   }
+};
 
-}
+const detailUser = async (req, res) => {
+  const { id } = req.usuario;
+
+  try {
+    const { rowCount, rows } = await pool.query(
+      "SELECT * FROM usuarios WHERE id = $1",
+      [id]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ message: "Usuário não autenticado!" });
+    }
+
+    const { senha: _, ...user } = rows[0];
+
+    return res.json(user);
+  } catch (error) {
+    return res.status(500).json({ message: "Erro interno do servidor" });
+  }
+};
 
 module.exports = {
   createUser,
-  login
+  login,
+  detailUser,
 };
