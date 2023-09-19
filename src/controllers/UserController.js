@@ -8,19 +8,19 @@ const createUser = async (req, res) => {
 
   if (!nome) {
     return res.status(400).json({
-      message: "O campo nome é obrigatório!"
+      message: "O campo nome é obrigatório!",
     });
   }
 
   if (!email) {
     return res.status(400).json({
-      message: "O campo e-mail é obrigatório!"
+      message: "O campo e-mail é obrigatório!",
     });
   }
 
   if (!senha) {
     return res.status(400).json({
-      message: "O campo senha é obrigatório!"
+      message: "O campo senha é obrigatório!",
     });
   }
 
@@ -56,7 +56,7 @@ const login = async (req, res) => {
 
   if (!email) {
     return res.status(400).json({
-      message: "O campo e-mail é obrigatório!"
+      message: "O campo e-mail é obrigatório!",
     });
   }
 
@@ -105,33 +105,33 @@ const detailUser = async (req, res) => {
       return res.status(404).json({ message: "Usuário não autenticado!" });
     }
 
-
     const { senha: _, ...user } = rows[0];
 
     return res.json(user);
   } catch (error) {
+    res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
 
 const updateUser = async (req, res) => {
   const { id } = req.usuario;
-  const { nome, email, senha } = req.body
+  const { nome, email, senha } = req.body;
 
   if (!nome) {
     return res.status(400).json({
-      message: "O campo nome é obrigatório!"
+      message: "O campo nome é obrigatório!",
     });
   }
 
   if (!email) {
     return res.status(400).json({
-      message: "O campo e-mail é obrigatório!"
+      message: "O campo e-mail é obrigatório!",
     });
   }
 
   if (!senha) {
     return res.status(400).json({
-      message: "O campo senha é obrigatório!"
+      message: "O campo senha é obrigatório!",
     });
   }
 
@@ -142,22 +142,24 @@ const updateUser = async (req, res) => {
     );
 
     if (rowCount > 0) {
-      return res
-        .status(404)
-        .json({ message: "O e-mail informado já está sendo utilizado por outro usuário." });
+      return res.status(404).json({
+        message:
+          "O e-mail informado já está sendo utilizado por outro usuário.",
+      });
     }
 
     const passwordEncrypt = await bcrypt.hash(senha, 10);
 
-    await pool.query('UPDATE usuarios SET nome = $1, email = $2, senha = $3 WHERE id = $4', [nome, email, passwordEncrypt, id])
+    await pool.query(
+      "UPDATE usuarios SET nome = $1, email = $2, senha = $3 WHERE id = $4",
+      [nome, email, passwordEncrypt, id]
+    );
 
-    return res.status(204).send()
-
+    return res.status(204).send();
   } catch (error) {
     res.status(500).json({ message: "Erro interno do servidor" });
   }
-}
-
+};
 
 module.exports = {
   createUser,
