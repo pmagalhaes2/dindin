@@ -7,6 +7,7 @@ const {
 } = require("./controllers/UserController");
 const {
   listTransaction,
+  getTransactionById
 } = require("./controllers/TransactionController");
 const { listCategories } = require("./controllers/CategoryController");
 const { validateUser } = require("./middlewares/authentication");
@@ -26,5 +27,6 @@ router.put("/usuario", validateUserDataFields, updateUser);
 router.get("/categoria", listCategories);
 
 router.get("/transacao", listTransaction)
+router.get('/transacao/:id', getTransactionById)
 
 module.exports = { router };

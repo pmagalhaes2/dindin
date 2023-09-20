@@ -12,6 +12,27 @@ const listTransaction = async (req, res) => {
     }
 };
 
+const getTransactionById = async (req, res) => {
+    const { id } = req.usuario;
+    const { id: transactionId } = req.params;
+  
+    try {
+      const { rowCount, rows } = await pool.query(
+        ` SELECT *, c.descricao as categoria_nome FROM transacoes t
+        JOIN categorias c ON t.categoria_id = c.id WHERE t.id = $1 AND t.usuario_id = $2;`,
+        [transactionId, id]
+      );
+  
+      return rowCount > 0
+        ? res.json(rows)
+        : res.status(404).json({ message: "Transação não encontrada!" });
+    } catch (error) {
+      console.log(error.message);
+      return res.status(500).json({ message: "Erro interno do servidor!" });
+    }
+  };
+
 module.exports = {
     listTransaction,
+    getTransactionById
 }
