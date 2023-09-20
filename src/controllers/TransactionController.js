@@ -6,9 +6,9 @@ const listTransaction = async (req, res) => {
   try {
     const { rows } = await pool.query(
       `SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id,
-       c.id as categoria_id, c.descricao as categoria_nome FROM transacoes t 
-       JOIN categorias c ON t.categoria_id = c.id 
-       WHERE t.usuario_id = $1`,
+        c.id as categoria_id, c.descricao as categoria_nome FROM transacoes t 
+        JOIN categorias c ON t.categoria_id = c.id 
+        WHERE t.usuario_id = $1`,
       [id]
     );
 
@@ -39,9 +39,54 @@ const getTransactionById = async (req, res) => {
   }
 };
 
+const registerTransaction = async (req, res) => {
+  const { descricao, valor, data, categoria_id, tipo } = req.body;
+  const { id } = req.usuario;
 
+  if (!descricao || !valor || !data || !categoria_id || !tipo) {
+    return res
+      .status(400)
+      .json({ message: "Todos os campos obrigatórios devem ser informados." });
+  }
+
+  if (tipo !== "entrada" && tipo !== "saida") {
+    return res
+      .status(400)
+      .json({ mensagem: "O tipo deve ser entrada ou saida." });
+  }
+
+  try {
+    const { rowCount } = await pool.query(
+      "SELECT * FROM categorias WHERE id = $1",
+      [categoria_id]
+    );
+
+    if (rowCount === 0) {
+      return res.status(400).json({ mensagem: "Categoria não encontrada." });
+    }
+
+    const newTransaction = await pool.query(
+      "INSERT INTO transacoes (descricao, valor, data, categoria_id, tipo, usuario_id) VALUES ($1, $2, $3, $4, $5, $6) returning *",
+      [descricao, valor, data, categoria_id, tipo, id]
+    );
+
+    const { rows } = await pool.query(
+      `SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id,
+        c.id as categoria_id, c.descricao as categoria_nome FROM transacoes t 
+        JOIN categorias c ON t.categoria_id = c.id 
+        WHERE t.id = $1 AND t.usuario_id = $2`,
+      [newTransaction.rows[0].id, id]
+    );
+
+    return res.status(201).json(rows);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Erro interno do servidor!" });
+  }
+};
 
 module.exports = {
   listTransaction,
   getTransactionById,
+  registerTransaction,
 };
