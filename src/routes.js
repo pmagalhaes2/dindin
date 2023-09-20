@@ -8,12 +8,18 @@ const {
 const {
   listTransaction,
   getTransactionById,
-  registerTransaction
+  registerTransaction,
+  updateTransaction,
 } = require("./controllers/TransactionController");
 const { listCategories } = require("./controllers/CategoryController");
 const { validateUser } = require("./middlewares/authentication");
-const { validateUserDataFields, validateEmailAndPasswordFields } = require("./middlewares/validateUserData");
-
+const {
+  validateUserDataFields,
+  validateEmailAndPasswordFields,
+} = require("./middlewares/validateUserData");
+const {
+  validateTransactionDataFields,
+} = require("./middlewares/validateTransactionData");
 
 const router = express();
 
@@ -27,8 +33,9 @@ router.put("/usuario", validateUserDataFields, updateUser);
 
 router.get("/categoria", listCategories);
 
-router.get("/transacao", listTransaction)
-router.get('/transacao/:id', getTransactionById)
-router.post("/transacao", registerTransaction)
+router.get("/transacao", listTransaction);
+router.get("/transacao/:id", getTransactionById);
+router.post("/transacao", validateTransactionDataFields, registerTransaction);
+router.put("/transacao/:id", validateTransactionDataFields, updateTransaction);
 
 module.exports = { router };

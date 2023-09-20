@@ -85,8 +85,45 @@ const registerTransaction = async (req, res) => {
   }
 };
 
+const updateTransaction = async (req, res) => {
+  const { id } = req.usuario;
+  const { id: transactionId } = req.params;
+  const { descricao, valor, data, categoria_id, tipo } = req.body;
+
+  try {
+    const validTransaction = await pool.query(
+      "SELECT * FROM transacoes WHERE id = $1 AND usuario_id = $2",
+      [transactionId, id]
+    );
+
+    const validCategory = await pool.query(
+      "SELECT * FROM categorias WHERE id = $1",
+      [categoria_id]
+    );
+
+    if (validTransaction.rowCount === 0) {
+      return res.status(400).json({ message: "Transação não encontrada!" });
+    }
+
+    if (validCategory.rowCount === 0) {
+      return res.status(400).json({ message: "Campo categoria_id inválido!" });
+    }
+
+    await pool.query(
+      `UPDATE transacoes SET descricao = $1, valor = $2, data = $3, categoria_id = $4, tipo = $5 
+      WHERE id = $6 AND usuario_id = $7`,
+      [descricao, valor, data, categoria_id, tipo, transactionId, id]
+    );
+
+    return res.status(204).send();
+  } catch (error) {
+    return res.status(500).json({ message: "Erro interno do servidor!" });
+  }
+};
+
 module.exports = {
   listTransaction,
   getTransactionById,
   registerTransaction,
+  updateTransaction,
 };
