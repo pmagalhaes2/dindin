@@ -66,14 +66,10 @@ const detailUser = async (req, res) => {
   const { id } = req.usuario;
 
   try {
-    const { rowCount, rows } = await pool.query(
+    const { rows } = await pool.query(
       "SELECT * FROM usuarios WHERE id = $1",
       [id]
     );
-
-    if (rowCount === 0) {
-      return res.status(404).json({ message: "Usuário não autenticado!" });
-    }
 
     const { senha: _, ...user } = rows[0];
 
@@ -112,6 +108,8 @@ const updateUser = async (req, res) => {
     res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
+
+
 
 module.exports = {
   createUser,
