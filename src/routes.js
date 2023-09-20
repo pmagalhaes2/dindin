@@ -5,9 +5,13 @@ const {
   detailUser,
   updateUser,
 } = require("./controllers/UserController");
-const { validateUser } = require("./middlewares/authentication");
+const {
+  listTransaction,
+} = require("./controllers/TransactionController");
 const { listCategories } = require("./controllers/CategoryController");
+const { validateUser } = require("./middlewares/authentication");
 const { validateUserDataFields, validateEmailAndPasswordFields } = require("./middlewares/validateUserData");
+
 
 const router = express();
 
@@ -20,5 +24,7 @@ router.get("/usuario", detailUser);
 router.put("/usuario", validateUserDataFields, updateUser);
 
 router.get("/categoria", listCategories);
+
+router.get("/transacao", listTransaction)
 
 module.exports = { router };
