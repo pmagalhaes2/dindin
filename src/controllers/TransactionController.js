@@ -2,17 +2,29 @@ const pool = require("../connection");
 
 const listTransaction = async (req, res) => {
   const { id } = req.usuario;
+  const { filtro } = req.query;
 
   try {
+    if (!filtro) {
+      const { rows } = await pool.query(
+        `SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id,
+          c.id as categoria_id, c.descricao as categoria_nome FROM transacoes t 
+          JOIN categorias c ON t.categoria_id = c.id 
+          WHERE t.usuario_id = $1`,
+        [id]
+      );
+      return res.json(rows);
+    }
+
     const { rows } = await pool.query(
-      `SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id,
-        c.id as categoria_id, c.descricao as categoria_nome FROM transacoes t 
-        JOIN categorias c ON t.categoria_id = c.id 
-        WHERE t.usuario_id = $1`,
-      [id]
+      ` SELECT t.id, t.tipo, t.descricao, t.valor, t.data, t.usuario_id,
+          c.id as categoria_id, c.descricao as categoria_nome FROM transacoes t 
+          JOIN categorias c ON t.categoria_id = c.id 
+          WHERE t.usuario_id = $1 AND c.descricao ILIKE ANY ($2)`,
+      [id, filtro]
     );
 
-    return res.status(200).json(rows);
+    return res.json(rows);
   } catch (error) {
     res.status(500).json({ message: "Erro interno do servidor" });
   }
@@ -123,26 +135,26 @@ const deleteTransaction = async (req, res) => {
 };
 
 const listTransactionStatment = async (req, res) => {
-  const {id} = req.usuario
+  const { id } = req.usuario;
 
-  try{
-
-    const {rows} = await pool.query(`
+  try {
+    const { rows } = await pool.query(
+      `
     SELECT SUM(valor), tipo
     FROM transacoes
     WHERE usuario_id = $1 GROUP BY tipo
-`,[id]
-  );
+`,
+      [id]
+    );
 
-    const sumEntries = rows.find((row)=>row.tipo === "entrada")?.sum || 0;
-    const sumOutput = rows.find((row)=>row.tipo === "saida")?.sum || 0;
+    const sumEntries = rows.find((row) => row.tipo === "entrada")?.sum || 0;
+    const sumOutput = rows.find((row) => row.tipo === "saida")?.sum || 0;
 
-    return res.json({ "entrada": Number(sumEntries), "saida": Number(sumOutput)})
-  }catch (error){
-    res.status(500).json({ mensagem: 'Erro ao obter o extrato.' });
+    return res.json({ entrada: Number(sumEntries), saida: Number(sumOutput) });
+  } catch (error) {
+    res.status(500).json({ mensagem: "Erro ao obter o extrato." });
   }
-
-}
+};
 
 const validateTransaction = async (transactionId, userId) => {
   const { rowCount } = await pool.query(
@@ -176,5 +188,5 @@ module.exports = {
   registerTransaction,
   updateTransaction,
   deleteTransaction,
-  listTransactionStatment
+  listTransactionStatment,
 };
