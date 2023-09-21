@@ -43,26 +43,11 @@ const registerTransaction = async (req, res) => {
   const { descricao, valor, data, categoria_id, tipo } = req.body;
   const { id } = req.usuario;
 
-  if (!descricao || !valor || !data || !categoria_id || !tipo) {
-    return res
-      .status(400)
-      .json({ message: "Todos os campos obrigatórios devem ser informados." });
-  }
-
-  if (tipo !== "entrada" && tipo !== "saida") {
-    return res
-      .status(400)
-      .json({ mensagem: "O tipo deve ser entrada ou saida." });
-  }
-
   try {
-    const { rowCount } = await pool.query(
-      "SELECT * FROM categorias WHERE id = $1",
-      [categoria_id]
-    );
+    const categoryValidation = await validateCategory(categoria_id);
 
-    if (rowCount === 0) {
-      return res.status(400).json({ mensagem: "Categoria não encontrada." });
+    if (!categoryValidation.isValid) {
+      return res.status(404).json({ message: categoryValidation.message });
     }
 
     const newTransaction = await pool.query(
@@ -80,7 +65,6 @@ const registerTransaction = async (req, res) => {
 
     return res.status(201).json(rows);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Erro interno do servidor!" });
   }
 };
@@ -91,22 +75,16 @@ const updateTransaction = async (req, res) => {
   const { descricao, valor, data, categoria_id, tipo } = req.body;
 
   try {
-    const validTransaction = await pool.query(
-      "SELECT * FROM transacoes WHERE id = $1 AND usuario_id = $2",
-      [transactionId, id]
-    );
+    const transactionValidation = await validateTransaction(transactionId, id);
 
-    const validCategory = await pool.query(
-      "SELECT * FROM categorias WHERE id = $1",
-      [categoria_id]
-    );
-
-    if (validTransaction.rowCount === 0) {
-      return res.status(400).json({ message: "Transação não encontrada!" });
+    if (!transactionValidation.isValid) {
+      return res.status(404).json({ message: transactionValidation.message });
     }
 
-    if (validCategory.rowCount === 0) {
-      return res.status(400).json({ message: "Campo categoria_id inválido!" });
+    const categoryValidation = await validateCategory(categoria_id);
+
+    if (!categoryValidation.isValid) {
+      return res.status(404).json({ message: categoryValidation.message });
     }
 
     await pool.query(
@@ -117,7 +95,34 @@ const updateTransaction = async (req, res) => {
 
     return res.status(204).send();
   } catch (error) {
+    console.log(error.message);
     return res.status(500).json({ message: "Erro interno do servidor!" });
+  }
+};
+
+const validateTransaction = async (transactionId, userId) => {
+  const { rowCount } = await pool.query(
+    "SELECT * FROM transacoes WHERE id = $1 AND usuario_id = $2",
+    [transactionId, userId]
+  );
+
+  if (rowCount === 0) {
+    return { isValid: false, message: "Transação não encontrada!" };
+  } else {
+    return { isValid: true };
+  }
+};
+
+const validateCategory = async (categoryId) => {
+  const { rowCount } = await pool.query(
+    "SELECT * FROM categorias WHERE id = $1",
+    [categoryId]
+  );
+
+  if (rowCount === 0) {
+    return { isValid: false, message: "Categoria não encontrada!" };
+  } else {
+    return { isValid: true };
   }
 };
 
