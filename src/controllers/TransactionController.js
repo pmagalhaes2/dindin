@@ -100,6 +100,28 @@ const updateTransaction = async (req, res) => {
   }
 };
 
+const deleteTransaction = async (req, res) => {
+  const { id } = req.usuario;
+  const { id: transactionId } = req.params;
+
+  try {
+    const transactionValidation = await validateTransaction(transactionId, id);
+
+    if (!transactionValidation.isValid) {
+      return res.status(404).json({ message: transactionValidation.message });
+    }
+
+    await pool.query(
+      `DELETE FROM transacoes WHERE id = $1 AND usuario_id = $2`,
+      [transactionId, id]
+    );
+
+    return res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: "Erro interno do servidor" });
+  }
+};
+
 const validateTransaction = async (transactionId, userId) => {
   const { rowCount } = await pool.query(
     "SELECT * FROM transacoes WHERE id = $1 AND usuario_id = $2",
@@ -131,4 +153,5 @@ module.exports = {
   getTransactionById,
   registerTransaction,
   updateTransaction,
+  deleteTransaction,
 };
