@@ -90,7 +90,7 @@ const updateUser = async (req, res) => {
     );
 
     if (rowCount > 0) {
-      return res.status(404).json({
+      return res.status(400).json({
         message:
           "O e-mail informado já está sendo utilizado por outro usuário.",
       });
