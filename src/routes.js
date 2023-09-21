@@ -11,6 +11,7 @@ const {
   registerTransaction,
   updateTransaction,
   deleteTransaction,
+  listTransactionStatment,
 } = require("./controllers/TransactionController");
 const { listCategories } = require("./controllers/CategoryController");
 const { validateUser } = require("./middlewares/authentication");
@@ -35,9 +36,11 @@ router.put("/usuario", validateUserDataFields, updateUser);
 router.get("/categoria", listCategories);
 
 router.get("/transacao", listTransaction);
+router.get("/transacao/extrato", listTransactionStatment);
 router.get("/transacao/:id", getTransactionById);
 router.post("/transacao", validateTransactionDataFields, registerTransaction);
 router.put("/transacao/:id", validateTransactionDataFields, updateTransaction);
 router.delete("/transacao/:id", deleteTransaction);
+
 
 module.exports = { router };

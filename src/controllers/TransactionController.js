@@ -122,6 +122,28 @@ const deleteTransaction = async (req, res) => {
   }
 };
 
+const listTransactionStatment = async (req, res) => {
+  const {id} = req.usuario
+
+  try{
+
+    const {rows} = await pool.query(`
+    SELECT SUM(valor), tipo
+    FROM transacoes
+    WHERE usuario_id = $1 GROUP BY tipo
+`,[id]
+  );
+
+    const sumEntries = rows.find((row)=>row.tipo === "entrada")?.sum || 0;
+    const sumOutput = rows.find((row)=>row.tipo === "saida")?.sum || 0;
+
+    return res.json({ "entrada": Number(sumEntries), "saida": Number(sumOutput)})
+  }catch (error){
+    res.status(500).json({ mensagem: 'Erro ao obter o extrato.' });
+  }
+
+}
+
 const validateTransaction = async (transactionId, userId) => {
   const { rowCount } = await pool.query(
     "SELECT * FROM transacoes WHERE id = $1 AND usuario_id = $2",
@@ -154,4 +176,5 @@ module.exports = {
   registerTransaction,
   updateTransaction,
   deleteTransaction,
+  listTransactionStatment
 };
