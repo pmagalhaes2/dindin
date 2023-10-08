@@ -1,43 +1,31 @@
-const validateUserDataFields = (req, res, next) => {
-  const bodyData = req.body;
-  const mandatoryFields = ["nome", "email", "senha"];
-
-  if (!Object.keys(bodyData).length) {
+const validateUserDataFields = (schema) => async (req, res, next) => {
+  if (!Object.keys(req.body).length) {
     return res.status(400).json({
       message: "Todos os campos obrigatórios devem ser informados.",
     });
   }
 
-  for (const field of mandatoryFields) {
-    if (!bodyData[field]) {
-      return res
-        .status(400)
-        .json({ message: `O campo ${field} é obrigatório!` });
-    }
+  try {
+    await schema.validateAsync(req.body);
+    next();
+  } catch (error) {
+    return res.status(500).json(error.message);
   }
-
-  next();
 };
 
-const validateEmailAndPasswordFields = (req, res, next) => {
-  const bodyData = req.body;
-  const mandatoryFields = ["email", "senha"];
-
-  if (!Object.keys(bodyData).length) {
+const validateEmailAndPasswordFields = (schema) => async (req, res, next) => {
+  if (!Object.keys(req.body).length) {
     return res.status(400).json({
       message: "Todos os campos obrigatórios devem ser informados.",
     });
   }
+  try {
+    await schema.validateAsync(req.body);
 
-  for (const field of mandatoryFields) {
-    if (!bodyData[field]) {
-      return res
-        .status(400)
-        .json({ message: `O campo ${field} é obrigatório!` });
-    }
+    next();
+  } catch (error) {
+    return res.status(500).json(error.message);
   }
-
-  next();
 };
 
 module.exports = { validateUserDataFields, validateEmailAndPasswordFields };
