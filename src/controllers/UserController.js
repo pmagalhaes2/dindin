@@ -29,7 +29,7 @@ const createUser = async (req, res) => {
 
     return res.status(201).json(user);
   } catch (error) {
-    res.status(500).json({ message: "Erro interno do servidor" });
+    return res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
 
@@ -55,10 +55,10 @@ const login = async (req, res) => {
     const token = jwt.sign({ id: user.id }, jwtPassword, { expiresIn: "8h" });
 
     return correctPassword
-      ? res.json({ usuario: user, token })
+      ? res.status(200).json({ usuario: user, token })
       : res.status(404).json({ message: "E-mail e/ou senha inválidos!" });
   } catch (error) {
-    res.status(500).json({ message: "Erro interno do servidor" });
+    return res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
 
@@ -66,16 +66,15 @@ const detailUser = async (req, res) => {
   const { id } = req.usuario;
 
   try {
-    const { rows } = await pool.query(
-      "SELECT * FROM usuarios WHERE id = $1",
-      [id]
-    );
+    const { rows } = await pool.query("SELECT * FROM usuarios WHERE id = $1", [
+      id,
+    ]);
 
     const { senha: _, ...user } = rows[0];
 
-    return res.json(user);
+    return res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ message: "Erro interno do servidor" });
+    return res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
 
@@ -105,10 +104,9 @@ const updateUser = async (req, res) => {
 
     return res.status(204).send();
   } catch (error) {
-    res.status(500).json({ message: "Erro interno do servidor" });
+    return res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
-
 
 module.exports = {
   createUser,

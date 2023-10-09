@@ -13,7 +13,7 @@ const listTransaction = async (req, res) => {
           WHERE t.usuario_id = $1`,
         [id]
       );
-      return res.json(rows);
+      return res.status(200).json(rows);
     }
 
     const { rows } = await pool.query(
@@ -24,9 +24,9 @@ const listTransaction = async (req, res) => {
       [id, filtro]
     );
 
-    return res.json(rows);
+    return res.status(200).json(rows);
   } catch (error) {
-    res.status(500).json({ message: "Erro interno do servidor" });
+    return res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
 
@@ -44,7 +44,7 @@ const getTransactionById = async (req, res) => {
     );
 
     return rowCount > 0
-      ? res.json(rows)
+      ? res.status(200).json(rows)
       : res.status(404).json({ message: "Transação não encontrada!" });
   } catch (error) {
     return res.status(500).json({ message: "Erro interno do servidor!" });
@@ -107,7 +107,6 @@ const updateTransaction = async (req, res) => {
 
     return res.status(204).send();
   } catch (error) {
-    console.log(error.message);
     return res.status(500).json({ message: "Erro interno do servidor!" });
   }
 };
@@ -150,9 +149,11 @@ const listTransactionStatment = async (req, res) => {
     const sumEntries = rows.find((row) => row.tipo === "entrada")?.sum || 0;
     const sumOutput = rows.find((row) => row.tipo === "saida")?.sum || 0;
 
-    return res.json({ entrada: Number(sumEntries), saida: Number(sumOutput) });
+    return res
+      .status(200)
+      .json({ entrada: Number(sumEntries), saida: Number(sumOutput) });
   } catch (error) {
-    res.status(500).json({ mensagem: "Erro ao obter o extrato." });
+    return res.status(500).json({ mensagem: "Erro ao obter o extrato." });
   }
 };
 
